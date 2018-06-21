@@ -1,6 +1,6 @@
 {
   "name": "flotteApp",
-  "app_id": "",
+  "app_id": "0c76a3e7",
   "type": "ionic-angular",
   "integrations": {
     "cordova": {}
