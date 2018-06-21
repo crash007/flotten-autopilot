@@ -12,6 +12,8 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
+import {Relay} from '../pages/home/relay.model'
+
 @NgModule({
   declarations: [
     MyApp,
@@ -36,6 +38,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     StatusBar,
     SplashScreen,
     BluetoothSerial,
+    Relay,
     
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
