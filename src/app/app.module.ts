@@ -13,6 +13,8 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
 import {Relay} from '../pages/home/relay.model'
+import { GoogleMaps } from "@ionic-native/google-maps";
+
 
 @NgModule({
   declarations: [
@@ -39,7 +41,8 @@ import {Relay} from '../pages/home/relay.model'
     SplashScreen,
     BluetoothSerial,
     Relay,
-    
+    GoogleMaps,
+
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

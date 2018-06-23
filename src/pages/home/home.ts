@@ -21,6 +21,10 @@ export class HomePage {
 
   }
 
+  click(event) {
+    console.log(event)
+    
+  }
   leftDown(event) {
     console.log(event)
     this.send(this.babordRelay.start);

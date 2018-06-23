@@ -1,18 +1,18 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Flotten</ion-title>
+    <ion-title>Manuell styrning</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
    <p style="text-align:center;">
-    <button ion-button color="" (mousedown)="leftDown($event)" (mouseup)="leftUp($event)" icon-start>
+    <button ion-button data-tap-disabled (press)="leftDown($event)" (touchend)="leftUp($event)" icon-start>
       <ion-icon name='arrow-back'></ion-icon>
       Babord
     </button>
 
 
-    <button ion-button color="" (mousedown)="rightDown($event)"  (mouseup)="rightUp($event)" icon-end>
+    <button ion-button color="" (press)="rightDown($event)"  (touchend)="rightUp($event)" icon-end>
       Styrbord
       <ion-icon name='arrow-forward'></ion-icon>
     </button>
