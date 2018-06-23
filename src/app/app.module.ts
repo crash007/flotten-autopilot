@@ -12,7 +12,7 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-import {Relay} from '../pages/home/relay.model'
+//import {Relay} from '../pages/home/relay.model'
 import { GoogleMaps } from "@ionic-native/google-maps";
 
 
@@ -40,7 +40,6 @@ import { GoogleMaps } from "@ionic-native/google-maps";
     StatusBar,
     SplashScreen,
     BluetoothSerial,
-    Relay,
     GoogleMaps,
 
     {provide: ErrorHandler, useClass: IonicErrorHandler}
