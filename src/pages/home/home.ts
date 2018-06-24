@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
-import {Relay} from './relay.model';
+import {Relay} from '../relay.model';
 
 @Component({
   selector: 'page-home',
@@ -18,7 +18,7 @@ export class HomePage {
     
     this.babordRelay = Relay.RELAY_A;
     this.styrbordRelay = Relay.RELAY_B;
-    
+
   }
 
   click(event) {

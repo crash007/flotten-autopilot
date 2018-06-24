@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from 'ionic-angular';
+import {Relay} from '../relay.model'
 
 import {
   GoogleMaps,
@@ -10,8 +11,12 @@ import {
   Marker,
   GoogleMapsEvent,
   Polyline,
-  LatLng
+  LatLng,
+  Spherical
 } from '@ionic-native/google-maps';
+import { Regulator } from './regulator.module';
+import { RudderTurnController } from './rudderturncontroller.module';
+import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 
 
 @Component({
@@ -22,8 +27,9 @@ export class Autopilot {
 
   map: GoogleMap;
   points: Array<LatLng>;
+  regulator: Regulator;
 
-  constructor(public navCtrl: NavController, public toastCtrl: ToastController) {
+  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial) {
 
   }
 
@@ -42,8 +48,6 @@ export class Autopilot {
         myLocationButton: true,
         mapToolbar: true,
       },
-
-
     };
 
     this.map = GoogleMaps.create('map_canvas', options);
@@ -79,8 +83,8 @@ export class Autopilot {
             .then((location: MyLocation) => {
               let START = location.latLng;
               let END = position;
-              
-               this.points = [
+
+              this.points = [
                 START,
                 END
               ];
@@ -98,35 +102,7 @@ export class Autopilot {
         });
       });
 
-    /*this.map.on(GoogleMapsEvent.MAP_CLICK).subscribe((data) => {
-      console.log("map click");
-      //this.placeMarkerAndPanTo(data.latLng, this.map);
-      /*
-      let marker: Marker = this.map.addMarkerSync({
-        title: 'Goal',
-        snippet: '',
-        position: data.latLng,
-        animation: GoogleMapsAnimation.BOUNCE
-      });
-
-      // show the infoWindow
-      marker.showInfoWindow();
-
-      // If clicked it, display the alert
-      marker.on(GoogleMapsEvent.MARKER_CLICK).subscribe(() => {
-        this.showToast('clicked!');
-      });
-      */
-    //});
-
   }
-
-
-
-  onButtonClick() {
-    
-  }
-
 
   showToast(message: string) {
     let toast = this.toastCtrl.create({
@@ -136,5 +112,42 @@ export class Autopilot {
     });
 
     toast.present(toast);
+  }
+
+
+  onButtonClick() {
+    console.log("start autopilot");
+
+    let Kp = 0.5;
+    let Ki = 0.01;
+    let Ts = 30;
+
+    let initAngel = 0;
+    let minAngel = -90;
+    let maxAngel = 90;
+    let turnTime = 30;
+    let barbordRelay = Relay.RELAY_A;
+    let styrbord = Relay.RELAY_B;
+    
+    this.regulator = new Regulator(this.points[1], this.points[0], Kp, Ki);
+    let rudder = new RudderTurnController(this.bluetoothSerial, initAngel, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
+    
+    let distance = Spherical.computeDistanceBetween(this.points[0],this.points[1]);
+    console.log(distance);
+    //while (distance > 5) {
+      
+      this.map.getMyLocation()
+      .then((location: MyLocation) => {
+        console.log("Getting location: "+location.latLng);
+        let turn = this.regulator.compute(location.latLng);
+        console.log(turn);
+        rudder.turnToAngel(turn);
+        
+      });
+        
+    //}
+    
+
+
   }
 }
