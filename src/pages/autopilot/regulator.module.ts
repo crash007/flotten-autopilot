@@ -4,18 +4,18 @@ import {Spherical } from '@ionic-native/google-maps'
 export class Regulator {
 
     private errSum:number;
-    private lasttime: number;
+    private lasttime: number; //seconds
     private lastPosition: LatLng;
 
-    constructor(private setpoint: LatLng, private currentPosition,private k_p:number, private k_i){
-        this.lasttime = Date.now();
+    constructor(private setpoint: LatLng, private startPosition, private k_p:number, private k_i){
+        this.lasttime = Date.now()/1000;
         this.errSum=0;
-        this.lastPosition=currentPosition;      
+        this.lastPosition=startPosition;      
     }
 
     compute(currentPosition:LatLng){
         
-        let now = Date.now();
+        let now = Date.now()/1000;
         let deltaTime = now-this.lasttime;
         let error = this.calculateError(currentPosition);
         console.log("error:"+error)

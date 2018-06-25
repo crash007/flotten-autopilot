@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from 'ionic-angular';
-import {Relay} from '../relay.model'
+import { Relay } from '../relay.model'
 
 import {
   GoogleMaps,
@@ -28,6 +28,7 @@ export class Autopilot {
   map: GoogleMap;
   points: Array<LatLng>;
   regulator: Regulator;
+  rudder: RudderTurnController;
 
   constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial) {
 
@@ -119,35 +120,41 @@ export class Autopilot {
     console.log("start autopilot");
 
     let Kp = 0.5;
-    let Ki = 0.01;
-    let Ts = 30;
+    let Ki = 0.001;
+    let Ts = 20;
 
     let initAngel = 0;
     let minAngel = -90;
     let maxAngel = 90;
-    let turnTime = 30;
+    let turnTime = 20;
     let barbordRelay = Relay.RELAY_A;
     let styrbord = Relay.RELAY_B;
-    
+
     this.regulator = new Regulator(this.points[1], this.points[0], Kp, Ki);
-    let rudder = new RudderTurnController(this.bluetoothSerial, initAngel, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
-    
-    let distance = Spherical.computeDistanceBetween(this.points[0],this.points[1]);
+    this.rudder = new RudderTurnController(this.bluetoothSerial, initAngel, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
+
+    let distance = Spherical.computeDistanceBetween(this.points[0], this.points[1]);
     console.log(distance);
-    //while (distance > 5) {
-      
-      this.map.getMyLocation()
+
+    this.controllerUpdate();
+
+    setInterval(() => {
+      this.controllerUpdate(); // Now the "this" still references the component
+    }, Ts * 1000);
+
+
+
+
+  }
+
+  controllerUpdate() {
+    this.map.getMyLocation()
       .then((location: MyLocation) => {
-        console.log("Getting location: "+location.latLng);
+        console.log("Getting location: " + location.latLng);
         let turn = this.regulator.compute(location.latLng);
-        console.log(turn);
-        rudder.turnToAngel(turn);
-        
+        console.log("turn"+turn);
+        this.rudder.turnToAngel(turn);
+
       });
-        
-    //}
-    
-
-
   }
 }

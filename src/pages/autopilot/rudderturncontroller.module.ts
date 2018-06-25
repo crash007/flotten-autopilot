@@ -17,8 +17,8 @@ export class RudderTurnController{
         }else{
             direction = this.styrbordRelay;
         }
-        
-        let time = angel*this.turnTime/( Math.abs(this.minAngel)+ Math.abs(this.maxAngel));
+
+        let time = Math.abs(angel)*this.turnTime/( Math.abs(this.minAngel)+ Math.abs(this.maxAngel));
         console.log("turnAngel:"+angel+" , turnTime:"+time);
     }
 
