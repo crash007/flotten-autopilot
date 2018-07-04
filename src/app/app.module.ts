@@ -12,8 +12,8 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
-//import {Relay} from '../pages/home/relay.model'
 import { GoogleMaps } from "@ionic-native/google-maps";
+import {DeviceOrientation} from "@ionic-native/device-orientation";
 
 
 @NgModule({
@@ -41,6 +41,7 @@ import { GoogleMaps } from "@ionic-native/google-maps";
     SplashScreen,
     BluetoothSerial,
     GoogleMaps,
+    DeviceOrientation,
 
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]

@@ -5,34 +5,36 @@ export class Regulator {
 
     private errSum:number;
     private lasttime: number; //seconds
-    private lastPosition: LatLng;
+    private refHeading: number;
 
     constructor(private setpoint: LatLng, private startPosition, private k_p:number, private k_i){
         this.lasttime = Date.now()/1000;
         this.errSum=0;
-        this.lastPosition=startPosition;      
+        this.refHeading = Spherical.computeHeading(startPosition, setpoint);
+        console.log("Ref heading: "+this.refHeading);      
     }
 
-    compute(currentPosition:LatLng){
+    compute(currentHeading:number){
         
         let now = Date.now()/1000;
         let deltaTime = now-this.lasttime;
-        let error = this.calculateError(currentPosition);
+        let error;
+
+        if(currentHeading >180){
+            currentHeading =currentHeading-360; 
+        }
+
+        error = this.refHeading-currentHeading;
+         
         console.log("error:"+error)
         this.errSum += error*deltaTime;
 
         let output = this.k_p*error + this.k_i*this.errSum;
         this.lasttime = now;
-        this.lastPosition=currentPosition;
+        
 
         return output;
     } 
 
-    private calculateError( currentPosition:LatLng ){
-        let refHeading = Spherical.computeHeading(this.lastPosition, this.setpoint);
-        console.log("reference heading"+refHeading);
-        let heading = Spherical.computeHeading(this.lastPosition, currentPosition);
-        console.log("curent heading:"+heading);
-        return refHeading-heading;
-    }
+    
 }

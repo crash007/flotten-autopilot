@@ -10,13 +10,13 @@ import {
   GoogleMapsAnimation,
   Marker,
   GoogleMapsEvent,
-  Polyline,
   LatLng,
   Spherical
 } from '@ionic-native/google-maps';
 import { Regulator } from './regulator.module';
 import { RudderTurnController } from './rudderturncontroller.module';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
+import { DeviceOrientation, DeviceOrientationCompassHeading } from '@ionic-native/device-orientation';
 
 
 @Component({
@@ -26,12 +26,14 @@ import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 export class Autopilot {
 
   map: GoogleMap;
-  points: Array<LatLng>;
+  points: Array<LatLng> = new Array<LatLng>();
   regulator: Regulator;
   rudder: RudderTurnController;
 
-  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial) {
+  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial, 
+    private deviceOrientation: DeviceOrientation) {
 
+      
   }
 
   ionViewDidLoad() {
@@ -63,15 +65,17 @@ export class Autopilot {
         })
       }).then(() => {
         this.map.on(GoogleMapsEvent.MAP_CLICK).subscribe((data: any) => {
-          this.map.clear();
+          //this.map.clear();
           console.log("map click");
           let position: LatLng = <LatLng>data[0];
+          this.points.push(position);
           console.log(JSON.stringify(position, null, 2));
           let marker: Marker = this.map.addMarkerSync({
-            title: 'Goal',
+            title: 'Goal ' + this.points.length,
             position: position,
             animation: GoogleMapsAnimation.BOUNCE
           });
+
 
           marker.showInfoWindow();
 
@@ -80,29 +84,25 @@ export class Autopilot {
             this.showToast('clicked!');
           });
 
-          this.map.getMyLocation()
-            .then((location: MyLocation) => {
-              let START = location.latLng;
-              let END = position;
-
-              this.points = [
-                START,
-                END
-              ];
-
-              let polyline: Polyline = this.map.addPolylineSync({
-                points: this.points,
-                color: '#AA00FF',
-                width: 2,
-                geodesic: false,
-                clickable: true  // clickable = false in default
-              });
-            });
+          if (this.points.length > 1) {
+            let i = this.points.length;
+            this.drawLine(this.points[i - 2], this.points[i - 1]);
+          }
 
 
         });
       });
 
+  }
+
+  drawLine(from: LatLng, to: LatLng) {
+    this.map.addPolylineSync({
+      points: [from, to],
+      color: '#AA00FF',
+      width: 2,
+      geodesic: false,
+      clickable: true  // clickable = false in default
+    });
   }
 
   showToast(message: string) {
@@ -119,9 +119,11 @@ export class Autopilot {
   onButtonClick() {
     console.log("start autopilot");
 
+
+
     let Kp = 0.5;
-    let Ki = 0.001;
-    let Ts = 20;
+    let Ki = 0;
+    let Ts = 5;
 
     let initAngel = 0;
     let minAngel = -90;
@@ -129,32 +131,53 @@ export class Autopilot {
     let turnTime = 20;
     let barbordRelay = Relay.RELAY_A;
     let styrbord = Relay.RELAY_B;
-
-    this.regulator = new Regulator(this.points[1], this.points[0], Kp, Ki);
+    
     this.rudder = new RudderTurnController(this.bluetoothSerial, initAngel, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
 
-    let distance = Spherical.computeDistanceBetween(this.points[0], this.points[1]);
-    console.log(distance);
+    this.map.getMyLocation()
+      .then((location: MyLocation) => {
 
-    this.controllerUpdate();
+        this.drawLine(location.latLng, this.points[0]);
+        this.regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);    
+        let distance = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
+        console.log(distance);
+        this.controllerUpdate();  
+      });
+
+    
+
+    
+
+    
 
     setInterval(() => {
       this.controllerUpdate(); // Now the "this" still references the component
     }, Ts * 1000);
 
 
-
-
   }
 
   controllerUpdate() {
+    this.deviceOrientation.getCurrentHeading().then(
+      (data: DeviceOrientationCompassHeading) => {
+        console.log(JSON.stringify(data, null, 2));
+        let turn = this.regulator.compute(data.magneticHeading);
+        console.log("turn" + turn);
+        this.rudder.turnToAngel(turn);
+      },
+      (error: any) => console.log(JSON.stringify(error, null, 2))
+    );
+
+    /*
     this.map.getMyLocation()
       .then((location: MyLocation) => {
+        console.log(JSON.stringify(location, null, 2));
         console.log("Getting location: " + location.latLng);
-        let turn = this.regulator.compute(location.latLng);
-        console.log("turn"+turn);
-        this.rudder.turnToAngel(turn);
+        
+        
 
       });
+
+      */
   }
 }
