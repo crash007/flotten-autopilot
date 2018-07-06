@@ -123,7 +123,8 @@ export class Autopilot {
 
     let Kp = 0.5;
     let Ki = 0;
-    let Ts = 5;
+    let Ts_compass = 5;
+    let Ts_gps = 30;
 
     let initAngel = 0;
     let minAngel = -90;
@@ -141,43 +142,46 @@ export class Autopilot {
         this.regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);    
         let distance = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
         console.log(distance);
-        this.controllerUpdate();  
+        //this.controllerUpdate();  
       });
 
     
 
-    
+      this.deviceOrientation.watchHeading({frequency:Ts_compass*1000}).subscribe((data: DeviceOrientationCompassHeading) =>{
+        //console.log(JSON.stringify(data, null, 2));
+        console.log("magetic heading compass: "+data.magneticHeading);
+        let turn = this.regulator.getControlSignal(data.magneticHeading);
+        console.log("turn" + turn);
+        this.rudder.turnToAngel(turn);
+      });
 
     
 
     setInterval(() => {
-      this.controllerUpdate(); // Now the "this" still references the component
-    }, Ts * 1000);
+      this.map.getMyLocation()
+      .then((location: MyLocation) => {
+        console.log(JSON.stringify(location, null, 2));
+        console.log("Getting location: " + location.latLng);
+        this.regulator.updateDrift(location.latLng);
+        
+
+      });
+    }, Ts_gps * 1000);
 
 
   }
-
+/*
   controllerUpdate() {
     this.deviceOrientation.getCurrentHeading().then(
       (data: DeviceOrientationCompassHeading) => {
         console.log(JSON.stringify(data, null, 2));
-        let turn = this.regulator.compute(data.magneticHeading);
-        console.log("turn" + turn);
+        let turn = this.regulator.getControlSignal(data.magneticHeading);
+        //console.log("turn" + turn);
         this.rudder.turnToAngel(turn);
       },
       (error: any) => console.log(JSON.stringify(error, null, 2))
     );
 
-    /*
-    this.map.getMyLocation()
-      .then((location: MyLocation) => {
-        console.log(JSON.stringify(location, null, 2));
-        console.log("Getting location: " + location.latLng);
-        
-        
+  }*/
 
-      });
-
-      */
-  }
 }

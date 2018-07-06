@@ -19,7 +19,9 @@ export class RudderTurnController{
         }
 
         let time = Math.abs(angel)*this.turnTime/( Math.abs(this.minAngel)+ Math.abs(this.maxAngel));
-        console.log("turnAngel:"+angel+" , turnTime:"+time);
+        console.log("turnAngel: "+angel+" , turnTime: "+time);
+
+        //call bluetooth
     }
 
 }
