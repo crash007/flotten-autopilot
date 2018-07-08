@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { NavController, ToastController } from 'ionic-angular';
-import { Relay } from '../relay.model'
 
 import {
   GoogleMaps,
@@ -12,8 +11,7 @@ import {
   GoogleMapsEvent,
   LatLng
 } from '@ionic-native/google-maps';
-import { Regulator } from './regulator.module';
-import { RudderTurnController } from './rudderturncontroller.module';
+
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 import { DeviceOrientation } from '@ionic-native/device-orientation';
 import { Autopilot } from './autopilot.module';
@@ -27,8 +25,6 @@ export class AutopilotPage {
 
   map: GoogleMap;
   points: Array<LatLng> = new Array<LatLng>();
-  //regulator: Regulator;
-  //rudder: RudderTurnController;
   autopilot: Autopilot;
 
   constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial,
@@ -121,34 +117,19 @@ export class AutopilotPage {
     this.points =[];
   }
 
-  onButtonClick() {
+  onStopClick(){
+    this.autopilot.stop();
+  }
+
+  onStartClick() {
     console.log("start autopilot");
 
 
-    let Kp = 0.5;
-    let Ki = 0;
-    let Ts_compass = 5*1000;
-    let Ts_gps = 0*1000;
-
-  
-    let minAngel = -90;
-    let maxAngel = 90;
-    let turnTime = 20;
-    let barbordRelay = Relay.RELAY_A;
-    let styrbord = Relay.RELAY_B;
-
     
-    this.map.getMyLocation()
-      .then((location: MyLocation) => {
-
-        this.drawLine(location.latLng, this.points[0]);
-        let regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);
-        let rudder = new RudderTurnController(this.bluetoothSerial, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
+    this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.bluetoothSerial);
+    this.autopilot.start();
     
-        this.autopilot = new Autopilot(regulator, rudder, this.map,this.deviceOrientation, this.points, Ts_compass, Ts_gps);
-        this.autopilot.start();
-        
-      });
+   
   }
 
 }

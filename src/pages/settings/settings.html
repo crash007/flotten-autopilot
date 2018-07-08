@@ -8,7 +8,13 @@
 
 <ion-content>
   <ion-list>
-    <ion-list-header>Regulator settings</ion-list-header>
+    
+      <ion-item>
+          <ion-label>compass</ion-label>
+        <ion-checkbox >compass</ion-checkbox>
+      </ion-item>
+
+
     <ion-item>
       <ion-icon name="ionic" item-start></ion-icon>
       Regulator settings
@@ -27,7 +33,7 @@
     </ion-item>
     <ion-item>
       <ion-label color="primary" fixed>Ts_gps</ion-label>
-      <ion-input type="number" placeholder="30"></ion-input>
+      <ion-input type="number" minlength="1" placeholder="30"></ion-input>
     </ion-item>
 
     <!--ion-list-header>Control settings</ion-list-header-->
