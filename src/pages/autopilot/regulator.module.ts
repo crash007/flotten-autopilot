@@ -24,8 +24,8 @@ export class Regulator {
 
     updateDrift(currentPosition: LatLng) {
         let distance = Spherical.computeDistanceBetween(this.currentPosition, currentPosition);
-        if ( distance > 10) {
-            console.log("Travelled :" +distance+" meters");
+        if (distance > 10) {
+            console.log("Travelled :" + distance + " meters");
             let now = Date.now() / 1000;
             let deltaTime = now - this.lasttime;
             let heading = Spherical.computeHeading(this.currentPosition, currentPosition);
@@ -36,15 +36,34 @@ export class Regulator {
             this.lasttime = now;
             this.currentPosition = currentPosition;
 
+        } else {
+            console.log("Only travelled " + distance + " wont update drift.");
         }
     }
 
     private calculateError(currentHeading: number) {
         if (currentHeading > 180) {
             currentHeading = currentHeading - 360;
-        }
 
-        return this.refHeading - currentHeading;
+        }
+        let angel = this.refHeading - currentHeading;
+        if (Math.abs(angel) > 180) {
+            angel = angel -360;
+        }
+        return angel;
+    }
+
+    setSetpoint(setpoint: LatLng) {
+
+        this.setpoint = setpoint;
+    }
+
+    setKi(k_i: number) {
+        this.k_i = k_i;
+    }
+
+    setKp(k_p: number) {
+        this.k_p = k_p;
     }
 
 }

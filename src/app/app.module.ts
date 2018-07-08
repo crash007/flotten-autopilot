@@ -4,7 +4,7 @@ import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 import { MyApp } from './app.component';
 
-import { Autopilot } from '../pages/autopilot/autopilot';
+import { AutopilotPage } from '../pages/autopilot/autopilot';
 import { SettingsPage } from '../pages/settings/settings';
 import { HomePage } from '../pages/home/home';
 import { TabsPage } from '../pages/tabs/tabs';
@@ -19,7 +19,7 @@ import {DeviceOrientation} from "@ionic-native/device-orientation";
 @NgModule({
   declarations: [
     MyApp,
-    Autopilot,
+    AutopilotPage,
     SettingsPage,
     HomePage,
     TabsPage
@@ -31,7 +31,7 @@ import {DeviceOrientation} from "@ionic-native/device-orientation";
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    Autopilot,
+    AutopilotPage,
     SettingsPage,
     HomePage,
     TabsPage

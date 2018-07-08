@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { Autopilot } from '../autopilot/autopilot';
+import { AutopilotPage } from '../autopilot/autopilot';
 import { SettingsPage } from '../settings/settings';
 import { HomePage } from '../home/home';
 
@@ -10,7 +10,7 @@ import { HomePage } from '../home/home';
 export class TabsPage {
 
   tab1Root = HomePage;
-  tab2Root = Autopilot;
+  tab2Root = AutopilotPage;
   tab3Root = SettingsPage;
 
   constructor() {

@@ -10,30 +10,31 @@ import {
   GoogleMapsAnimation,
   Marker,
   GoogleMapsEvent,
-  LatLng,
-  Spherical
+  LatLng
 } from '@ionic-native/google-maps';
 import { Regulator } from './regulator.module';
 import { RudderTurnController } from './rudderturncontroller.module';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
-import { DeviceOrientation, DeviceOrientationCompassHeading } from '@ionic-native/device-orientation';
+import { DeviceOrientation } from '@ionic-native/device-orientation';
+import { Autopilot } from './autopilot.module';
 
 
 @Component({
   selector: 'page-autopilot',
   templateUrl: 'autopilot.html'
 })
-export class Autopilot {
+export class AutopilotPage {
 
   map: GoogleMap;
   points: Array<LatLng> = new Array<LatLng>();
-  regulator: Regulator;
-  rudder: RudderTurnController;
+  //regulator: Regulator;
+  //rudder: RudderTurnController;
+  autopilot: Autopilot;
 
-  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial, 
+  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial,
     private deviceOrientation: DeviceOrientation) {
 
-      
+
   }
 
   ionViewDidLoad() {
@@ -115,73 +116,39 @@ export class Autopilot {
     toast.present(toast);
   }
 
+  onResetClick(){
+    this.map.clear();
+    this.points =[];
+  }
 
   onButtonClick() {
     console.log("start autopilot");
 
 
-
     let Kp = 0.5;
     let Ki = 0;
-    let Ts_compass = 5;
-    let Ts_gps = 30;
+    let Ts_compass = 5*1000;
+    let Ts_gps = 0*1000;
 
-    let initAngel = 0;
+  
     let minAngel = -90;
     let maxAngel = 90;
     let turnTime = 20;
     let barbordRelay = Relay.RELAY_A;
     let styrbord = Relay.RELAY_B;
-    
-    this.rudder = new RudderTurnController(this.bluetoothSerial, initAngel, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
 
+    
     this.map.getMyLocation()
       .then((location: MyLocation) => {
 
         this.drawLine(location.latLng, this.points[0]);
-        this.regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);    
-        let distance = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
-        console.log(distance);
-        //this.controllerUpdate();  
-      });
-
+        let regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);
+        let rudder = new RudderTurnController(this.bluetoothSerial, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
     
-
-      this.deviceOrientation.watchHeading({frequency:Ts_compass*1000}).subscribe((data: DeviceOrientationCompassHeading) =>{
-        //console.log(JSON.stringify(data, null, 2));
-        console.log("magetic heading compass: "+data.magneticHeading);
-        let turn = this.regulator.getControlSignal(data.magneticHeading);
-        console.log("turn" + turn);
-        this.rudder.turnToAngel(turn);
-      });
-
-    
-
-    setInterval(() => {
-      this.map.getMyLocation()
-      .then((location: MyLocation) => {
-        console.log(JSON.stringify(location, null, 2));
-        console.log("Getting location: " + location.latLng);
-        this.regulator.updateDrift(location.latLng);
+        this.autopilot = new Autopilot(regulator, rudder, this.map,this.deviceOrientation, this.points, Ts_compass, Ts_gps);
+        this.autopilot.start();
         
-
       });
-    }, Ts_gps * 1000);
-
-
   }
-/*
-  controllerUpdate() {
-    this.deviceOrientation.getCurrentHeading().then(
-      (data: DeviceOrientationCompassHeading) => {
-        console.log(JSON.stringify(data, null, 2));
-        let turn = this.regulator.getControlSignal(data.magneticHeading);
-        //console.log("turn" + turn);
-        this.rudder.turnToAngel(turn);
-      },
-      (error: any) => console.log(JSON.stringify(error, null, 2))
-    );
-
-  }*/
 
 }
