@@ -20,11 +20,8 @@ export class RudderTurnController {
 
         let time = Math.abs(angel) * this.turnTime / (Math.abs(this.minAngel) + Math.abs(this.maxAngel));
         console.log("turnAngel: " + angel + " , turnTime: " + time);
-        this.bluetoothSerial.write(direction.start);
-        //sleep
-        this.bluetoothSerial.write(direction.start);
+        this.send(direction,time);
 
-        //call bluetooth
     }
 
     private success(success) {
@@ -37,32 +34,36 @@ export class RudderTurnController {
 
     }
 
-    private send(direction: Relay, time:number) {
+    /** time in ms */
+    private send(direction: Relay, time: number) {
         this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
+        setTimeout(() => {
+            console.log("sending stop ");
+            this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
+        }, time);
+    }
+
+    private start(direction: Relay) {
+        this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
+    }
+
+    private stop(direction: Relay) {
         this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
     }
 
-    private start(direction:Relay){
-        this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
-    }
-
-    private stop(direction:Relay){
-        this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
-    }
-
-    public startbarbord(){
+    public startbarbord() {
         this.start(Relay.BARBORD_RELAY);
     }
 
-    public stopBarbord(){
+    public stopBarbord() {
         this.stop(Relay.BARBORD_RELAY);
     }
 
-    public startStyrbord(){
+    public startStyrbord() {
         this.start(Relay.STYRBORD_RELAY);
     }
 
-    public stopStyrbord(){
+    public stopStyrbord() {
         this.stop(Relay.STYRBORD_RELAY);
     }
 

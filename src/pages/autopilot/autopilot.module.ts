@@ -26,7 +26,7 @@ export class Autopilot {
 
     let minAngel = -90;
     let maxAngel = 90;
-    let turnTime = 20;
+    let turnTime = 20*1000;
     let useCompass = false;
     let setpointRadius = 10;
 
@@ -61,9 +61,6 @@ export class Autopilot {
                 if( this.points.length > 1){
                   this.regulator.setNewSetpoint(this.points[1], location.latLng);
                   delete this.points[0];
-                }else{
-                  //Reached the last point
-                  this.stop();
                 }
               
               }

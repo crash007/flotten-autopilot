@@ -15,13 +15,13 @@ export class HomePage {
   constructor(public navCtrl: NavController, private bluetoothSerial: BluetoothSerial) {
     bluetoothSerial.enable();
     
-    let babordRelay = Relay.RELAY_A;
-    let styrbordRelay = Relay.RELAY_B;
+    //let babordRelay = Relay.RELAY_A;
+    //let styrbordRelay = Relay.RELAY_B;
     let minAngel=-90;
     let maxAngel = 90;
-    let turnTime = 30;
+    let turnTime = 30*1000;
 
-    this.rudderController = new RudderTurnController(this.bluetoothSerial, -minAngel, maxAngel, turnTime, babordRelay, styrbordRelay);
+    this.rudderController = new RudderTurnController(this.bluetoothSerial, -minAngel, maxAngel, turnTime);
 
   }
 

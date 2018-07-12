@@ -7,7 +7,6 @@ export class Regulator {
     private errSum: number;
     private lasttime: number; //seconds
     private refHeading: number;
-    private distanceToSetpoint: number;
 
     
     constructor(private setpoint: LatLng, private currentPosition, private k_p: number, private k_i) {
@@ -36,8 +35,6 @@ export class Regulator {
         let distance = Spherical.computeDistanceBetween(this.currentPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
         
-        this.distanceToSetpoint = Spherical.computeDistanceBetween(currentPosition, this.setpoint);
-        
         let now = Date.now() / 1000;
         let deltaTime = now - this.lasttime;
         let heading = Spherical.computeHeading(this.currentPosition, currentPosition);
@@ -54,9 +51,6 @@ export class Regulator {
     updateDrift(currentPosition: LatLng) {
         let distance = Spherical.computeDistanceBetween(this.currentPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
-        
-        this.distanceToSetpoint = Spherical.computeDistanceBetween(currentPosition, this.setpoint);
-
         
         let now = Date.now() / 1000;
         let deltaTime = now - this.lasttime;
