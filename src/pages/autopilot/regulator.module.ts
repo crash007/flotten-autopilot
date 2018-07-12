@@ -2,18 +2,27 @@ import { LatLng } from "@ionic-native/google-maps";
 import { Spherical } from '@ionic-native/google-maps'
 
 export class Regulator {
+    
 
     private errSum: number;
     private lasttime: number; //seconds
     private refHeading: number;
     private distanceToSetpoint: number;
 
+    
     constructor(private setpoint: LatLng, private currentPosition, private k_p: number, private k_i) {
+        this.setNewSetpoint(setpoint,currentPosition);
+    }
+
+    
+    setNewSetpoint(setpoint: LatLng,currentPosition: LatLng){
+        this.setpoint=setpoint;
         this.lasttime = Date.now() / 1000;
-        this.errSum = 0;
         this.refHeading = Spherical.computeHeading(currentPosition, setpoint);
+        this.errSum = 0;
         console.log("Ref heading: " + this.refHeading);
     }
+  
 
     getControlSignal(currentHeading: number) {
 

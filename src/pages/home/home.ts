@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 import {Relay} from '../relay.model';
+import { RudderTurnController } from '../autopilot/rudderturncontroller.module';
 
 @Component({
   selector: 'page-home',
@@ -9,15 +10,18 @@ import {Relay} from '../relay.model';
 })
 
 export class HomePage {
-
-  babordRelay : Relay;
-  styrbordRelay: Relay;
+  rudderController: RudderTurnController;
 
   constructor(public navCtrl: NavController, private bluetoothSerial: BluetoothSerial) {
     bluetoothSerial.enable();
     
-    this.babordRelay = Relay.RELAY_A;
-    this.styrbordRelay = Relay.RELAY_B;
+    let babordRelay = Relay.RELAY_A;
+    let styrbordRelay = Relay.RELAY_B;
+    let minAngel=-90;
+    let maxAngel = 90;
+    let turnTime = 30;
+
+    this.rudderController = new RudderTurnController(this.bluetoothSerial, -minAngel, maxAngel, turnTime, babordRelay, styrbordRelay);
 
   }
 
@@ -27,22 +31,23 @@ export class HomePage {
   }
   leftDown(event) {
     console.log(event)
-    this.send(this.babordRelay.start);
+    this.rudderController.startbarbord();
+    
   }
   
   rightDown(event) {
     console.log(event)
-    this.send(this.styrbordRelay.start);
+    this.rudderController.startStyrbord();
   }
   
   leftUp(event) {
     console.log(event)
-    this.send(this.babordRelay.stop);
+    this.rudderController.stopBarbord();
   }
   
   rightUp(event) {
     console.log(event)
-    this.send(this.styrbordRelay.stop);
+    this.rudderController.stopStyrbord();
   
   }
   

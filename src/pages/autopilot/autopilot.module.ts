@@ -1,10 +1,9 @@
 import { Regulator } from "./regulator.module";
 import { RudderTurnController } from "./rudderturncontroller.module";
-import { GoogleMap, LatLng, MyLocation } from "@ionic-native/google-maps";
+import { GoogleMap, LatLng, MyLocation, Spherical } from "@ionic-native/google-maps";
 import { DeviceOrientation, DeviceOrientationCompassHeading } from "@ionic-native/device-orientation";
 import { Subscription } from "rxjs/Subscription";
 import { BluetoothSerial } from "@ionic-native/bluetooth-serial";
-import { Relay } from "../relay.model";
 
 export class Autopilot {
 
@@ -28,16 +27,16 @@ export class Autopilot {
     let minAngel = -90;
     let maxAngel = 90;
     let turnTime = 20;
-    let barbordRelay = Relay.RELAY_A;
-    let styrbord = Relay.RELAY_B;
     let useCompass = false;
+    let setpointRadius = 10;
 
-    this.rudderController = new RudderTurnController(this.bluetoothSerial, minAngel, maxAngel, turnTime, barbordRelay, styrbord);
+    this.rudderController = new RudderTurnController(this.bluetoothSerial, minAngel, maxAngel, turnTime);
 
     this.map.getMyLocation()
       .then((location: MyLocation) => {
 
         this.drawLine(location.latLng, this.points[0]);
+        
         this.regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);
 
         if (useCompass) {
@@ -46,7 +45,7 @@ export class Autopilot {
             console.log("magetic heading compass: " + data.trueHeading);
             let turn = this.regulator.getControlSignal(data.trueHeading);
             console.log("turn" + turn);
-            this.rudderController.turnToAngel(turn);
+            this.rudderController.turn(turn);
           });
         }
         this.gpsSubscription = setInterval(() => {
@@ -55,8 +54,22 @@ export class Autopilot {
               console.log(JSON.stringify(location, null, 2));
               console.log("Getting location: " + location.latLng);
               
+              let distanceToSetpoint = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
+              
+              if(distanceToSetpoint < setpointRadius){
+                
+                if( this.points.length > 1){
+                  this.regulator.setNewSetpoint(this.points[1], location.latLng);
+                  delete this.points[0];
+                }else{
+                  //Reached the last point
+                  this.stop();
+                }
+              
+              }
+
               if (!useCompass) {
-                this.rudderController.turnToAngel(this.regulator.getControlSignalLatLng(location.latLng));
+                this.rudderController.turn(this.regulator.getControlSignalLatLng(location.latLng));
               }else{
                 this.regulator.updateDrift(location.latLng);
               }

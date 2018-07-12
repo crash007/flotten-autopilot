@@ -123,12 +123,9 @@ export class AutopilotPage {
 
   onStartClick() {
     console.log("start autopilot");
-
-
     
     this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.bluetoothSerial);
     this.autopilot.start();
-    
    
   }
 
