@@ -12,9 +12,10 @@ import {
   LatLng
 } from '@ionic-native/google-maps';
 
-import { BluetoothSerial } from '@ionic-native/bluetooth-serial';
 import { DeviceOrientation } from '@ionic-native/device-orientation';
 import { Autopilot } from './autopilot.module';
+import { SettingsService } from '../../services/share/settings-service';
+import { RudderService } from '../../services/rudder-service';
 
 
 @Component({
@@ -27,9 +28,8 @@ export class AutopilotPage {
   points: Array<LatLng> = new Array<LatLng>();
   autopilot: Autopilot;
 
-  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private bluetoothSerial: BluetoothSerial,
-    private deviceOrientation: DeviceOrientation) {
-
+  constructor(public navCtrl: NavController, public toastCtrl: ToastController, private rudderService: RudderService,
+    private deviceOrientation: DeviceOrientation, private settingsService: SettingsService) {
 
   }
 
@@ -123,9 +123,20 @@ export class AutopilotPage {
 
   onStartClick() {
     console.log("start autopilot");
+    this.settingsService.getSettings().then();
+
+    this.settingsService.getSettings().then(settings => {
+      console.log(JSON.stringify(settings, null, 2));
+      
+      this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.rudderService, settings);
+     this.autopilot.start();
+
+    },
+      error => console.log(JSON.stringify(error, null, 2))
+    );
+
+
     
-    this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.bluetoothSerial);
-    this.autopilot.start();
    
   }
 

@@ -14,6 +14,9 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { GoogleMaps } from "@ionic-native/google-maps";
 import {DeviceOrientation} from "@ionic-native/device-orientation";
+import { NativeStorage } from '@ionic-native/native-storage';
+import { SettingsService } from '../services/share/settings-service';
+import { RudderService } from '../services/rudder-service';
 
 
 @NgModule({
@@ -42,7 +45,9 @@ import {DeviceOrientation} from "@ionic-native/device-orientation";
     BluetoothSerial,
     GoogleMaps,
     DeviceOrientation,
-
+    SettingsService,
+    NativeStorage,
+    RudderService,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

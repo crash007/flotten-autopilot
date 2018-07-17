@@ -3,7 +3,8 @@ import { RudderTurnController } from "./rudderturncontroller.module";
 import { GoogleMap, LatLng, MyLocation, Spherical } from "@ionic-native/google-maps";
 import { DeviceOrientation, DeviceOrientationCompassHeading } from "@ionic-native/device-orientation";
 import { Subscription } from "rxjs/Subscription";
-import { BluetoothSerial } from "@ionic-native/bluetooth-serial";
+import { Settings } from "../../models/settings.model";
+import { RudderService } from "../../services/rudder-service";
 
 export class Autopilot {
 
@@ -11,36 +12,27 @@ export class Autopilot {
   gpsSubscription: any;
   regulator: Regulator;
   rudderController: RudderTurnController;
-  private Ts_compass: number;
-  private Ts_gps: number
+ 
 
-  constructor(private map: GoogleMap, private deviceOrientation: DeviceOrientation, private points: Array<LatLng>, private bluetoothSerial: BluetoothSerial) {
-    this.Ts_compass = 5 * 1000;
-    this.Ts_gps = 30 * 1000;
-  }
+  constructor(private map: GoogleMap, private deviceOrientation: DeviceOrientation, private points: Array<LatLng>, private rudderService: RudderService,
+    private settings: Settings) {
+
+    }
 
 
   public start() {
-    let Kp = 0.5;
-    let Ki = 0;
-
-    let minAngel = -90;
-    let maxAngel = 90;
-    let turnTime = 20*1000;
-    let useCompass = false;
-    let setpointRadius = 10;
-
-    this.rudderController = new RudderTurnController(this.bluetoothSerial, minAngel, maxAngel, turnTime);
+  
+    this.rudderController = new RudderTurnController(this.rudderService, this.settings.minAngel, this.settings.maxAngel, this.settings.turnTime);
 
     this.map.getMyLocation()
       .then((location: MyLocation) => {
 
         this.drawLine(location.latLng, this.points[0]);
-        
-        this.regulator = new Regulator(this.points[0], location.latLng, Kp, Ki);
 
-        if (useCompass) {
-          this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.Ts_compass }).subscribe((data: DeviceOrientationCompassHeading) => {
+        this.regulator = new Regulator(this.points[0], location.latLng, this.settings.kp, this.settings.ki);
+
+        if (this.settings.compass) {
+          this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.tsCompass*1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
             //console.log(JSON.stringify(data, null, 2));
             console.log("magetic heading compass: " + data.trueHeading);
             let turn = this.regulator.getControlSignal(data.trueHeading);
@@ -53,25 +45,25 @@ export class Autopilot {
             .then((location: MyLocation) => {
               console.log(JSON.stringify(location, null, 2));
               console.log("Getting location: " + location.latLng);
-              
+
               let distanceToSetpoint = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
-              
-              if(distanceToSetpoint < setpointRadius){
-                
-                if( this.points.length > 1){
+
+              if (distanceToSetpoint < this.settings.setpointRadius) {
+
+                if (this.points.length > 1) {
                   this.regulator.setNewSetpoint(this.points[1], location.latLng);
                   delete this.points[0];
                 }
-              
+
               }
 
-              if (!useCompass) {
+              if (!this.settings.compass) {
                 this.rudderController.turn(this.regulator.getControlSignalLatLng(location.latLng));
-              }else{
+              } else {
                 this.regulator.updateDrift(location.latLng);
               }
             });
-        }, this.Ts_gps);
+        }, this.settings.tsGps*1000);
       });
 
   }
@@ -84,7 +76,7 @@ export class Autopilot {
     }
 
     if (this.gpsSubscription != null) {
-      this.gpsSubscription.stop();
+      this.gpsSubscription.unsubscribe();
     }
   }
 
@@ -96,6 +88,16 @@ export class Autopilot {
       geodesic: false,
       clickable: true  // clickable = false in default
     });
+  }
+
+
+  updateSettins(settings: Settings){
+    this.settings = settings;
+    this.regulator.setKp(this.settings.kp);
+    this.regulator.setKi(this.settings.ki);
+    this.rudderController.setMinAngel(this.settings.minAngel);
+    this.rudderController.setMaxAngel(this.settings.maxAngel);
+    this.rudderController.setTurntime(this.settings.turnTime);
   }
 
 }

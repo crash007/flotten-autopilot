@@ -1,70 +1,52 @@
-import { Relay } from "../relay.model";
-import { BluetoothSerial } from "@ionic-native/bluetooth-serial";
+
+import { Relay } from "../../models/relay.model";
+import { RudderService } from "../../services/rudder-service";
 
 export class RudderTurnController {
 
 
-    constructor(private bluetoothSerial: BluetoothSerial, private minAngel: number, private maxAngel: number, private turnTime: number) {
-
+    constructor(private rudderService: RudderService, private minAngel: number, private maxAngel: number, private turnTime: number) {
+   
     }
+
+   
 
     turn(angel: number) {
 
         let direction: Relay;
-
+        console.log("angel:"+angel);
+        console.log(""); 
         if (angel < 0) {
             direction = Relay.BARBORD_RELAY;
         } else {
             direction = Relay.STYRBORD_RELAY;
         }
-
+        console.log("Direction: "+direction);
         let time = Math.abs(angel) * this.turnTime / (Math.abs(this.minAngel) + Math.abs(this.maxAngel));
         console.log("turnAngel: " + angel + " , turnTime: " + time);
-        this.send(direction,time);
+        if (time > this.turnTime) {
+            time = this.turnTime;
+            console.log("Turning max turntime: " + time);
+        }
+
+        this.rudderService.send(direction, time * 1000);
 
     }
+  
 
-    private success(success) {
-        console.log("success" + success);
-
+    setMinAngel(minAngel: number) {
+        this.minAngel = minAngel;
     }
 
-    private failure(fail) {
-        console.log(fail);
 
+    setMaxAngel(maxAngel: number) {
+        this.maxAngel = maxAngel;
     }
 
-    /** time in ms */
-    private send(direction: Relay, time: number) {
-        this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
-        setTimeout(() => {
-            console.log("sending stop ");
-            this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
-        }, time);
+    setTurntime(turnTime: number) {
+        this.turnTime = turnTime;
     }
 
-    private start(direction: Relay) {
-        this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
-    }
 
-    private stop(direction: Relay) {
-        this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
-    }
-
-    public startbarbord() {
-        this.start(Relay.BARBORD_RELAY);
-    }
-
-    public stopBarbord() {
-        this.stop(Relay.BARBORD_RELAY);
-    }
-
-    public startStyrbord() {
-        this.start(Relay.STYRBORD_RELAY);
-    }
-
-    public stopStyrbord() {
-        this.stop(Relay.STYRBORD_RELAY);
-    }
 
 }

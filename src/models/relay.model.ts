@@ -11,8 +11,8 @@ export class Relay {
 
    public static RELAY_A = new Relay(Relay.RELAY_A_START, Relay.RELAY_A_STOP);
    public static RELAY_B = new Relay(Relay.RELAY_B_START, Relay.RELAY_B_STOP);
-   public static BARBORD_RELAY = Relay.RELAY_A;
-   public static STYRBORD_RELAY = Relay.RELAY_B;
+   public static BARBORD_RELAY = Relay.RELAY_B;
+   public static STYRBORD_RELAY = Relay.RELAY_A;
 
 }
 

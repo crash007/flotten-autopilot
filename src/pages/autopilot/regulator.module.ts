@@ -9,13 +9,13 @@ export class Regulator {
     private refHeading: number;
 
     
-    constructor(private setpoint: LatLng, private currentPosition, private k_p: number, private k_i) {
+    constructor( setpoint: LatLng, private currentPosition, private k_p: number, private k_i) {
         this.setNewSetpoint(setpoint,currentPosition);
     }
 
     
     setNewSetpoint(setpoint: LatLng,currentPosition: LatLng){
-        this.setpoint=setpoint;
+        
         this.lasttime = Date.now() / 1000;
         this.refHeading = Spherical.computeHeading(currentPosition, setpoint);
         this.errSum = 0;
