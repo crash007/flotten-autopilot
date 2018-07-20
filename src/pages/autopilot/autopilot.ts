@@ -123,7 +123,7 @@ export class AutopilotPage {
 
   onStartClick() {
     console.log("start autopilot");
-    this.settingsService.getSettings().then();
+   
 
     this.settingsService.getSettings().then(settings => {
       console.log(JSON.stringify(settings, null, 2));

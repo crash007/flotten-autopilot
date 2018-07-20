@@ -9,58 +9,72 @@ export class Regulator {
     private refHeading: number;
 
     
-    constructor( setpoint: LatLng, private currentPosition, private k_p: number, private k_i) {
-        this.setNewSetpoint(setpoint,currentPosition);
+    constructor( setpoint: LatLng, private lastPosition, private k_p: number, private k_i) {
+        this.setNewSetpoint(setpoint,lastPosition);
     }
 
     
     setNewSetpoint(setpoint: LatLng,currentPosition: LatLng){
         
-        this.lasttime = Date.now() / 1000;
+        this.lasttime = Date.now() / 1000; //seconds
         this.refHeading = Spherical.computeHeading(currentPosition, setpoint);
         this.errSum = 0;
         console.log("Ref heading: " + this.refHeading);
     }
   
-
+/**
+ * 
+ * @param currentHeading 
+ * rudder angel
+ */
     getControlSignal(currentHeading: number) {
 
         let error = this.calculateError(currentHeading);
         console.log("error:" + error);
-        let output = this.k_p * error + this.k_i * this.errSum;
-        return output;
+        return this.pid(error);
     }
-
+    
+    
+/**
+ * 
+ * @param currentPosition 
+ * 
+ * RUdder angel
+ */
     getControlSignalLatLng(currentPosition: LatLng) {
-        let distance = Spherical.computeDistanceBetween(this.currentPosition, currentPosition);
+        let distance = Spherical.computeDistanceBetween(this.lastPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
         
         let now = Date.now() / 1000;
         let deltaTime = now - this.lasttime;
-        let heading = Spherical.computeHeading(this.currentPosition, currentPosition);
+        let heading = Spherical.computeHeading(this.lastPosition, currentPosition);
         console.log("gps heading: " + heading);
         let error = this.calculateError(heading);
         this.errSum += error * deltaTime;
         console.log("ErrSum: " + this.errSum);
         this.lasttime = now;
-        this.currentPosition = currentPosition;
-        return this.k_p * error + this.k_i * this.errSum;
+        this.lastPosition = currentPosition;
+        return this.pid(error);
         
     }
     
-    updateDrift(currentPosition: LatLng) {
-        let distance = Spherical.computeDistanceBetween(this.currentPosition, currentPosition);
+    private pid(error: number) {
+        return this.k_p * error + this.k_i * this.errSum;
+    }
+
+    updateIntegral(currentPosition: LatLng) {
+        let distance = Spherical.computeDistanceBetween(this.lastPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
         
-        let now = Date.now() / 1000;
-        let deltaTime = now - this.lasttime;
-        let heading = Spherical.computeHeading(this.currentPosition, currentPosition);
+        let now = Date.now() / 1000; //Seconds
+        let deltaTime = now - this.lasttime; //Seconds
+        let heading = Spherical.computeHeading(this.lastPosition, currentPosition);
         console.log("gps heading: " + heading);
         let error = this.calculateError(heading);
         this.errSum += error * deltaTime;
         console.log("ErrSum: " + this.errSum);
         this.lasttime = now;
-        this.currentPosition = currentPosition;
+        this.lastPosition = currentPosition;
 
 
     }

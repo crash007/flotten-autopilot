@@ -5,34 +5,43 @@ import { RudderService } from "../../services/rudder-service";
 export class RudderTurnController {
 
 
+    private lastRudderAngel: number;
+
     constructor(private rudderService: RudderService, private minAngel: number, private maxAngel: number, private turnTime: number) {
-   
+        this.lastRudderAngel=0;
     }
 
    
 
-    turn(angel: number) {
-
+    turnToAngel(angel: number) {
+        console.log("Turning from "+ this.lastRudderAngel+" to rudder-angel: " + angel);
+        
         let direction: Relay;
-        console.log("angel:"+angel);
-        console.log(""); 
-        if (angel < 0) {
+        let deltaAngel = this.lastRudderAngel-angel;
+       
+
+        let moveRudderTime = Math.abs(deltaAngel) * +this.turnTime*1000 / ( Math.abs(+this.minAngel) + +this.maxAngel);
+        console.log("moveRudderTime: "+moveRudderTime);
+
+        if (deltaAngel < 0) {
             direction = Relay.BARBORD_RELAY;
         } else {
             direction = Relay.STYRBORD_RELAY;
         }
-        console.log("Direction: "+direction);
-        let time = Math.abs(angel) * this.turnTime / (Math.abs(this.minAngel) + Math.abs(this.maxAngel));
-        console.log("turnAngel: " + angel + " , turnTime: " + time);
-        if (time > this.turnTime) {
-            time = this.turnTime;
-            console.log("Turning max turntime: " + time);
-        }
 
-        this.rudderService.send(direction, time * 1000);
+        if(moveRudderTime > 500){
+            this.rudderService.move(direction, moveRudderTime);
+            this.lastRudderAngel = angel;
+        }else{
+            console.log("Not moving, movetime: "+moveRudderTime);
+        }
 
     }
   
+
+    resetRudderAngel(){
+        this.lastRudderAngel=0;
+    }
 
     setMinAngel(minAngel: number) {
         this.minAngel = minAngel;

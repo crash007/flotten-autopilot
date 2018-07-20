@@ -7,8 +7,6 @@ import { NativeStorage } from '@ionic-native/native-storage';
 @Injectable()
 export class SettingsService {
 
-   
-
     constructor(private nativeStorage: NativeStorage) {      
       
     }
@@ -21,7 +19,6 @@ export class SettingsService {
                 console.log(JSON.stringify(error, null, 2));
             }
         );
-        
     }
 
     public getSettings() {

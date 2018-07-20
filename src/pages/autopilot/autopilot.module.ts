@@ -5,23 +5,26 @@ import { DeviceOrientation, DeviceOrientationCompassHeading } from "@ionic-nativ
 import { Subscription } from "rxjs/Subscription";
 import { Settings } from "../../models/settings.model";
 import { RudderService } from "../../services/rudder-service";
+import { BackgroundMode } from "@ionic-native/background-mode";
 
 export class Autopilot {
 
   compassSubscription: Subscription;
-  gpsSubscription: any;
+  gpsIntervall: number;
   regulator: Regulator;
   rudderController: RudderTurnController;
  
 
   constructor(private map: GoogleMap, private deviceOrientation: DeviceOrientation, private points: Array<LatLng>, private rudderService: RudderService,
-    private settings: Settings) {
+    private settings: Settings, private backgroundMode: BackgroundMode) {
 
     }
 
 
   public start() {
   
+    //this.rudderService.initBluetooth();
+    this.backgroundMode.enable();
     this.rudderController = new RudderTurnController(this.rudderService, this.settings.minAngel, this.settings.maxAngel, this.settings.turnTime);
 
     this.map.getMyLocation()
@@ -32,40 +35,44 @@ export class Autopilot {
         this.regulator = new Regulator(this.points[0], location.latLng, this.settings.kp, this.settings.ki);
 
         if (this.settings.compass) {
-          this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.tsCompass*1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
-            //console.log(JSON.stringify(data, null, 2));
-            console.log("magetic heading compass: " + data.trueHeading);
-            let turn = this.regulator.getControlSignal(data.trueHeading);
-            console.log("turn" + turn);
-            this.rudderController.turn(turn);
-          });
+          this.startCompassWatcher();
         }
-        this.gpsSubscription = setInterval(() => {
-          this.map.getMyLocation()
-            .then((location: MyLocation) => {
-              console.log(JSON.stringify(location, null, 2));
-              console.log("Getting location: " + location.latLng);
 
-              let distanceToSetpoint = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
-
-              if (distanceToSetpoint < this.settings.setpointRadius) {
-
-                if (this.points.length > 1) {
-                  this.regulator.setNewSetpoint(this.points[1], location.latLng);
-                  delete this.points[0];
-                }
-
-              }
-
-              if (!this.settings.compass) {
-                this.rudderController.turn(this.regulator.getControlSignalLatLng(location.latLng));
-              } else {
-                this.regulator.updateDrift(location.latLng);
-              }
-            });
-        }, this.settings.tsGps*1000);
+        
+        this.startGpsWatcher();
       });
 
+  }
+
+  private startGpsWatcher() {
+    this.gpsIntervall = setInterval(() => {
+      this.map.getMyLocation()
+        .then((location: MyLocation) => {
+          console.log(JSON.stringify(location, null, 2));
+          console.log("Getting location: " + location.latLng);
+          let distanceToSetpoint = Spherical.computeDistanceBetween(location.latLng, this.points[0]);
+          if (distanceToSetpoint < this.settings.setpointRadius) {
+            if (this.points.length > 1) {
+              this.regulator.setNewSetpoint(this.points[1], location.latLng);
+              delete this.points[0];
+            }
+          }
+          if (!this.settings.compass) {
+            this.rudderController.turnToAngel(this.regulator.getControlSignalLatLng(location.latLng));
+          }
+          else {
+            this.regulator.updateIntegral(location.latLng);
+          }
+        });
+    }, this.settings.tsGps * 1000);
+  }
+
+  private startCompassWatcher() {
+    this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.tsCompass * 1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
+      console.log("magetic heading compass: " + data.trueHeading);
+      let turn = this.regulator.getControlSignal(data.trueHeading);
+      this.rudderController.turnToAngel(turn);
+    });
   }
 
   public stop() {
@@ -73,10 +80,11 @@ export class Autopilot {
 
     if (this.compassSubscription != null) {
       this.compassSubscription.unsubscribe();
+      
     }
 
-    if (this.gpsSubscription != null) {
-      this.gpsSubscription.unsubscribe();
+    if (this.gpsIntervall != null) {
+      clearInterval(this.gpsIntervall);
     }
   }
 

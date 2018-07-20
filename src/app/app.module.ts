@@ -17,6 +17,7 @@ import {DeviceOrientation} from "@ionic-native/device-orientation";
 import { NativeStorage } from '@ionic-native/native-storage';
 import { SettingsService } from '../services/share/settings-service';
 import { RudderService } from '../services/rudder-service';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 
 @NgModule({
@@ -48,6 +49,7 @@ import { RudderService } from '../services/rudder-service';
     SettingsService,
     NativeStorage,
     RudderService,
+    BackgroundMode,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

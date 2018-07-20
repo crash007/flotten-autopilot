@@ -5,17 +5,30 @@
 </ion-header>
 
 <ion-content padding>
-   <p style="text-align:center;">
-    <button ion-button data-tap-disabled (press)="leftDown($event)" (touchend)="leftUp($event)" icon-start>
+    <ion-row></ion-row>
+  <ion-row>
+    <button ion-button large (press)="leftDown($event)" (touchend)="leftUp($event)" icon-start>
       <ion-icon name='arrow-back'></ion-icon>
       Babord
     </button>
 
 
-    <button ion-button color="" (press)="rightDown($event)"  (touchend)="rightUp($event)" icon-end>
+    <button ion-button large color="" (press)="rightDown($event)"  (touchend)="rightUp($event)" icon-end>
       Styrbord
       <ion-icon name='arrow-forward'></ion-icon>
     </button>
-  </p>
 
+  </ion-row> 
+<ion-row>
+    <ion-col text-center>
+  <button ion-button round (click)="onBluetoothClick($event)">Bluetooth</button>
+  
+</ion-col>
+</ion-row>
+<ion-row>
+    <ion-input type="text" [(ngModel)]="connected"  name="connected"></ion-input>
+</ion-row> 
+    
+
+ 
   </ion-content>

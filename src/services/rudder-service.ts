@@ -5,21 +5,54 @@ import { Relay } from '../models/relay.model';
 
 
 @Injectable()
-export class RudderService { 
+export class RudderService {
 
-    constructor(private bluetoothSerial: BluetoothSerial) {      
-      
-        bluetoothSerial.enable();
-        this.connect();
-        
+    private connected: boolean;
+
+
+    constructor(private bluetoothSerial: BluetoothSerial) {
+
+        this.initBluetooth();
     }
 
+    public initBluetooth() {
+        console.log("init bluetooth");
+        if (this.bluetoothSerial) {
+            this.bluetoothSerial.isConnected().then( () => {this.connected=true; console.log("Already connected")},
+                () => {
+                    console.log("check if bluetooth enabled");
+                    this.bluetoothSerial.isEnabled().then(
+                        ()=> {
+                            setTimeout(() => {
+                                this.connect(),1000
+                            });
+                            
+                        }
+                        , 
+                        () => { this.bluetoothSerial.enable().then(() => {
+                            console.log("enable bluetooth"); this.connect()
+                        }, (fail) =>
+                                console.log(fail));
+                    }
+
+                    );
+                }
+            );
+
+        }
+    }
+
+    public isConnected(){
+        return this.connected;
+    }
     private connect() {
+        console.log("connecting to 02:11:23:34:B3:04");
         
             this.bluetoothSerial.connect("02:11:23:34:B3:04").subscribe((data: any) => {
+                console.log("connect callback:");
                 console.log(JSON.stringify(data, null, 2));
+                this.connected = true;
             });
-        
     }
 
     private success(success) {
@@ -28,15 +61,14 @@ export class RudderService {
     }
 
     private failure(fail) {
-        console.log(fail);
+        console.log("Failure sending: " + fail);
         this.connect();
-     
-
     }
 
 
     /** time in ms */
-    public send(direction: Relay, time: number) {
+    public move(direction: Relay, time: number) {
+        console.log("Moving rudder in direction: "+direction+" ,for time: "+time+" ms");
         this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
         setTimeout(() => {
             console.log("sending stop ");
@@ -44,28 +76,25 @@ export class RudderService {
         }, time);
     }
 
-    private start(direction: Relay) {
-        this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
+    private send(data: number[]) {
+        this.bluetoothSerial.write(data).then(this.success, this.failure);
     }
 
-    private stop(direction: Relay) {
-        this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
-    }
-
+   
     public startbarbord() {
-        this.start(Relay.BARBORD_RELAY);
+        this.send(Relay.BARBORD_RELAY.start);
     }
 
     public stopBarbord() {
-        this.stop(Relay.BARBORD_RELAY);
+        this.send(Relay.BARBORD_RELAY.stop);
     }
 
     public startStyrbord() {
-        this.start(Relay.STYRBORD_RELAY);
+        this.send(Relay.STYRBORD_RELAY.start);
     }
 
     public stopStyrbord() {
-        this.stop(Relay.STYRBORD_RELAY);
+        this.send(Relay.STYRBORD_RELAY.stop);
     }
-    
+
 }

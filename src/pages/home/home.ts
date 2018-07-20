@@ -8,35 +8,34 @@ import { RudderService } from '../../services/rudder-service';
 })
 
 export class HomePage {
-
+  connected: boolean;
   constructor(public navCtrl: NavController, private rudderService: RudderService) {
-
-  }
-
-  click(event) {
-    console.log(event)
     
   }
+
+  
   leftDown(event) {
-    console.log(event)
     this.rudderService.startbarbord();
     
   }
   
   rightDown(event) {
-    console.log(event)
     this.rudderService.startStyrbord();
   }
   
   leftUp(event) {
-    console.log(event)
     this.rudderService.stopBarbord();
   }
   
   rightUp(event) {
-    console.log(event)
     this.rudderService.stopStyrbord();
   
+  }
+
+  onBluetoothClick(){
+    this.connected = false;
+    this.rudderService.initBluetooth();
+    this.connected = this.rudderService.isConnected();
   }
   
   
