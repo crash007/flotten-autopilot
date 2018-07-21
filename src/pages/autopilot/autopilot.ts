@@ -16,6 +16,7 @@ import { DeviceOrientation } from '@ionic-native/device-orientation';
 import { Autopilot } from './autopilot.module';
 import { SettingsService } from '../../services/share/settings-service';
 import { RudderService } from '../../services/rudder-service';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 
 @Component({
@@ -27,10 +28,12 @@ export class AutopilotPage {
   map: GoogleMap;
   points: Array<LatLng> = new Array<LatLng>();
   autopilot: Autopilot;
+  rudderAngel: string;
+  heading: string;
 
   constructor(public navCtrl: NavController, public toastCtrl: ToastController, private rudderService: RudderService,
-    private deviceOrientation: DeviceOrientation, private settingsService: SettingsService) {
-
+    private deviceOrientation: DeviceOrientation, private settingsService: SettingsService, private backgroundMode: BackgroundMode) {
+      
   }
 
   ionViewDidLoad() {
@@ -128,8 +131,10 @@ export class AutopilotPage {
     this.settingsService.getSettings().then(settings => {
       console.log(JSON.stringify(settings, null, 2));
       
-      this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.rudderService, settings);
+      this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.rudderService, settings, this.backgroundMode);
      this.autopilot.start();
+     this.autopilot.getRudderAngel().subscribe((angel)=> this.rudderAngel=angel.toFixed(0));
+     this.autopilot.getHeading().subscribe((heading)=> this.heading=heading.toFixed(0));
 
     },
       error => console.log(JSON.stringify(error, null, 2))

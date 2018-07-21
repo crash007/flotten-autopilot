@@ -6,6 +6,7 @@ import { Subscription } from "rxjs/Subscription";
 import { Settings } from "../../models/settings.model";
 import { RudderService } from "../../services/rudder-service";
 import { BackgroundMode } from "@ionic-native/background-mode";
+import { Subject } from "rxjs/Subject";
 
 export class Autopilot {
 
@@ -13,7 +14,7 @@ export class Autopilot {
   gpsIntervall: number;
   regulator: Regulator;
   rudderController: RudderTurnController;
- 
+  headingSubject = new Subject<number>();  
 
   constructor(private map: GoogleMap, private deviceOrientation: DeviceOrientation, private points: Array<LatLng>, private rudderService: RudderService,
     private settings: Settings, private backgroundMode: BackgroundMode) {
@@ -22,8 +23,7 @@ export class Autopilot {
 
 
   public start() {
-  
-    //this.rudderService.initBluetooth();
+
     this.backgroundMode.enable();
     this.rudderController = new RudderTurnController(this.rudderService, this.settings.minAngel, this.settings.maxAngel, this.settings.turnTime);
 
@@ -70,6 +70,7 @@ export class Autopilot {
   private startCompassWatcher() {
     this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.tsCompass * 1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
       console.log("magetic heading compass: " + data.trueHeading);
+      this.headingSubject.next(data.trueHeading);
       let turn = this.regulator.getControlSignal(data.trueHeading);
       this.rudderController.turnToAngel(turn);
     });
@@ -86,6 +87,14 @@ export class Autopilot {
     if (this.gpsIntervall != null) {
       clearInterval(this.gpsIntervall);
     }
+  }
+
+  public getRudderAngel(){
+    return this.rudderController.getRudderAngel();
+  }
+
+  public getHeading(){
+    return this.headingSubject;
   }
 
   drawLine(from: LatLng, to: LatLng) {

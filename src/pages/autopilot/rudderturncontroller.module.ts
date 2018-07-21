@@ -1,14 +1,17 @@
 
 import { Relay } from "../../models/relay.model";
 import { RudderService } from "../../services/rudder-service";
+import { Subject } from "rxjs/Subject";
 
 export class RudderTurnController {
 
 
     private lastRudderAngel: number;
+    private lastRudderAngelSubject : Subject<number>;
 
     constructor(private rudderService: RudderService, private minAngel: number, private maxAngel: number, private turnTime: number) {
         this.lastRudderAngel=0;
+        this.lastRudderAngelSubject = new Subject();
     }
 
    
@@ -32,12 +35,16 @@ export class RudderTurnController {
         if(moveRudderTime > 500){
             this.rudderService.move(direction, moveRudderTime);
             this.lastRudderAngel = angel;
+            this.lastRudderAngelSubject.next(this.lastRudderAngel);
         }else{
             console.log("Not moving, movetime: "+moveRudderTime);
         }
 
     }
   
+    public getRudderAngel(){
+        return this.lastRudderAngelSubject;
+    }
 
     resetRudderAngel(){
         this.lastRudderAngel=0;
