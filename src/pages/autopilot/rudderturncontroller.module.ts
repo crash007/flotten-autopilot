@@ -15,7 +15,7 @@ export class RudderTurnController {
     }
 
    
-
+    
     turnToAngel(angel: number) {
         console.log("Turning from "+ this.lastRudderAngel+" to rudder-angel: " + angel);
         
@@ -32,7 +32,7 @@ export class RudderTurnController {
             direction = Relay.STYRBORD_RELAY;
         }
 
-        if(moveRudderTime > 500){
+        if(moveRudderTime > 100){
             this.rudderService.move(direction, moveRudderTime);
             this.lastRudderAngel = angel;
             this.lastRudderAngelSubject.next(this.lastRudderAngel);
