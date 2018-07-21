@@ -3,7 +3,7 @@
     <name>flotteApp</name>
     <description>An awesome Ionic/Cordova app.</description>
     <author email="hi@ionicframework" href="http://ionicframework.com/">Ionic Framework Team</author>
-    <content original-src="index.html" src="http://192.168.0.170:8100" />
+    <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -82,11 +82,18 @@
     <plugin name="cordova-plugin-ionic-webview" spec="1.1.19" />
     <plugin name="cordova-plugin-ionic-keyboard" spec="2.0.5" />
     <plugin name="cordova-plugin-googlemaps" spec="^2.3.6">
-        <variable name="API_KEY_FOR_ANDROID" value="" />
-        <variable name="API_KEY_FOR_IOS" value="" />
+        <variable name="API_KEY_FOR_ANDROID" value="AIzaSyBxaygoi0npSYmSMLFXmWR9POLLYGjPpH4" />
+        <variable name="API_KEY_FOR_IOS" value="AIzaSyBASO59RX2-h53qxbaI2lKL6OFMmUC7Gxc" />
     </plugin>
-    <allow-navigation href="http://192.168.0.170:8100" />
     <plugin name="cordova-plugin-bluetooth-serial" spec="^0.4.7" />
     <plugin name="cordova-plugin-statusbar" spec="^2.4.2" />
-    <engine name="android" spec="^7.1.0" />
+    <plugin name="cordova-plugin-geolocation" spec="^4.0.1">
+        <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="To locate you" />
+    </plugin>
+    <allow-navigation href="http://192.168.0.170:8100" />
+    <allow-navigation href="http://192.168.1.53:8100" />
+    <allow-navigation href="http://192.168.43.170:8100" />
+    <plugin name="cordova-plugin-background-mode" spec="^0.7.2" />
+    <engine name="android" spec="^7.1.1" />
+    <engine name="browser" spec="5.0.3" />
 </widget>
