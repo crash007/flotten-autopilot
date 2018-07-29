@@ -66,14 +66,20 @@ export class RudderService {
     }
 
 
-    /** time in ms */
+    /**
+     * 
+     * 
+     * @param direction 
+     * @param time in seconds 
+     */
     public move(direction: Relay, time: number) {
-        console.log("Moving rudder in direction: "+direction+" ,for time: "+time+" ms");
+        
+        console.log("Moving rudder in direction: "+direction.name+" ,for time: "+time+" seconds");
         this.bluetoothSerial.write(direction.start).then(this.success, this.failure);
         setTimeout(() => {
             console.log("sending stop ");
             this.bluetoothSerial.write(direction.stop).then(this.success, this.failure);
-        }, time);
+        }, time*1000);
     }
 
     private send(data: number[]) {

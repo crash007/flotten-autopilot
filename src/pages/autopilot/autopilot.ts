@@ -33,7 +33,7 @@ export class AutopilotPage {
 
   constructor(public navCtrl: NavController, public toastCtrl: ToastController, private rudderService: RudderService,
     private deviceOrientation: DeviceOrientation, private settingsService: SettingsService, private backgroundMode: BackgroundMode) {
-      
+
   }
 
   ionViewDidLoad() {
@@ -115,34 +115,34 @@ export class AutopilotPage {
     toast.present(toast);
   }
 
-  onResetClick(){
+  onResetClick() {
     this.map.clear();
-    this.points =[];
+    this.points = [];
   }
 
-  onStopClick(){
+  onStopClick() {
     this.autopilot.stop();
   }
 
   onStartClick() {
     console.log("start autopilot");
-   
+
 
     this.settingsService.getSettings().then(settings => {
       console.log(JSON.stringify(settings, null, 2));
-      
-      this.autopilot = new Autopilot(this.map,this.deviceOrientation,this.points,this.rudderService, settings, this.backgroundMode);
-     this.autopilot.start();
-     this.autopilot.getRudderAngel().subscribe((angel)=> this.rudderAngel=angel.toFixed(0));
-     this.autopilot.getHeading().subscribe((heading)=> this.heading=heading.toFixed(0));
+
+      this.autopilot = new Autopilot(this.map, this.deviceOrientation, this.points, this.rudderService, settings, this.backgroundMode);
+      this.autopilot.start();
+      this.autopilot.getRudderAngel().subscribe((angel) => this.rudderAngel = angel.toFixed(0));
+      this.autopilot.getHeading().subscribe((heading) => this.heading = heading.toFixed(0));
 
     },
       error => console.log(JSON.stringify(error, null, 2))
     );
 
-
-    
-   
+    this.settingsService.settingsUpdate().subscribe((settings)=>{
+      this.autopilot.updateSettings(settings);
+    });
   }
 
 }

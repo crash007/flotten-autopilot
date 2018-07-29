@@ -3,6 +3,7 @@ import { NavController } from 'ionic-angular';
 import { SettingsService } from '../../services/share/settings-service';
 import { Settings } from '../../models/settings.model';
 
+
 @Component({
   selector: 'page-settings',
   templateUrl: 'settings.html'
@@ -12,11 +13,13 @@ export class SettingsPage {
   settings: Settings = new Settings();
 
   constructor(public navCtrl: NavController, private settingsService: SettingsService) {
-
+    
     this.settingsService.getSettings().then(data => {
       console.log(JSON.stringify(data, null, 2));
-      this.settings = data;
-
+      
+      if(data !=null){  
+        this.settings = data;
+      }
     },
       error => console.log(JSON.stringify(error, null, 2))
     );

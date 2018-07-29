@@ -8,38 +8,35 @@ import { RudderService } from "../../services/rudder-service";
 import { BackgroundMode } from "@ionic-native/background-mode";
 import { Subject } from "rxjs/Subject";
 
+
 export class Autopilot {
 
   compassSubscription: Subscription;
-  gpsIntervall: number;
+  gpsIntervall: NodeJS.Timer;
   regulator: Regulator;
   rudderController: RudderTurnController;
-  headingSubject = new Subject<number>();  
+  headingSubject = new Subject<number>();
 
   constructor(private map: GoogleMap, private deviceOrientation: DeviceOrientation, private points: Array<LatLng>, private rudderService: RudderService,
     private settings: Settings, private backgroundMode: BackgroundMode) {
 
-    }
+  }
 
 
   public start() {
 
     this.backgroundMode.enable();
-    this.rudderController = new RudderTurnController(this.rudderService, this.settings.minAngel, this.settings.maxAngel, this.settings.turnTime);
+    this.rudderController = new RudderTurnController(this.rudderService, this.settings.rudder);
 
     this.map.getMyLocation()
       .then((location: MyLocation) => {
 
         this.drawLine(location.latLng, this.points[0]);
 
-        this.regulator = new Regulator(this.points[0], location.latLng, this.settings.kp, this.settings.ki);
-
-        if (this.settings.compass) {
-          this.startCompassWatcher();
-        }
-
-        
+        this.regulator = new Regulator(this.points[0], location.latLng, this.settings.regulator.kp, this.settings.regulator.ki);
+        this.startCompassWatcher();
         this.startGpsWatcher();
+
       });
 
   }
@@ -57,22 +54,20 @@ export class Autopilot {
               delete this.points[0];
             }
           }
-          if (!this.settings.compass) {
-            this.rudderController.turnToAngel(this.regulator.getControlSignalLatLng(location.latLng));
-          }
-          else {
-            this.regulator.updateIntegral(location.latLng);
-          }
+
+          this.regulator.updateIntegral(location.latLng);
+
         });
-    }, this.settings.tsGps * 1000);
+    }, this.settings.regulator.tsGps * 1000);
   }
 
   private startCompassWatcher() {
-    this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.tsCompass * 1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
+    this.compassSubscription = this.deviceOrientation.watchHeading({ frequency: this.settings.regulator.tsCompass * 1000 }).subscribe((data: DeviceOrientationCompassHeading) => {
       console.log("magetic heading compass: " + data.trueHeading);
       this.headingSubject.next(data.trueHeading);
-      let turn = this.regulator.getControlSignal(data.trueHeading);
-      this.rudderController.turnToAngel(turn);
+      let rudderAngel = this.regulator.getControlSignal(data.trueHeading);
+      this.rudderController.turnToAngel(rudderAngel);
+
     });
   }
 
@@ -81,7 +76,7 @@ export class Autopilot {
 
     if (this.compassSubscription != null) {
       this.compassSubscription.unsubscribe();
-      
+
     }
 
     if (this.gpsIntervall != null) {
@@ -89,11 +84,11 @@ export class Autopilot {
     }
   }
 
-  public getRudderAngel(){
+  public getRudderAngel() {
     return this.rudderController.getRudderAngel();
   }
 
-  public getHeading(){
+  public getHeading() {
     return this.headingSubject;
   }
 
@@ -108,13 +103,16 @@ export class Autopilot {
   }
 
 
-  updateSettins(settings: Settings){
+  updateSettings(settings: Settings) {
     this.settings = settings;
-    this.regulator.setKp(this.settings.kp);
-    this.regulator.setKi(this.settings.ki);
-    this.rudderController.setMinAngel(this.settings.minAngel);
-    this.rudderController.setMaxAngel(this.settings.maxAngel);
-    this.rudderController.setTurntime(this.settings.turnTime);
-  }
+    if (this.regulator != null) {
+     
+      this.regulator.setKp(this.settings.regulator.kp);
+      this.regulator.setKi(this.settings.regulator.ki);
+    }
 
+    if (this.rudderController != null) {
+      this.rudderController.setSettings(this.settings.rudder);
+    }
+  }
 }

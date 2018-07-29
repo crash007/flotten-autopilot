@@ -2,8 +2,7 @@ import { LatLng } from "@ionic-native/google-maps";
 import { Spherical } from '@ionic-native/google-maps'
 
 export class Regulator {
-    
-
+  
     private errSum: number;
     private lasttime: number; //seconds
     private refHeading: number;
@@ -16,7 +15,7 @@ export class Regulator {
     
     setNewSetpoint(setpoint: LatLng,currentPosition: LatLng){
         
-        this.lasttime = Date.now() / 1000; //seconds
+        this.lasttime = Date.now(); //seconds
         this.refHeading = Spherical.computeHeading(currentPosition, setpoint);
         this.errSum = 0;
         console.log("Ref heading: " + this.refHeading);
@@ -45,12 +44,12 @@ export class Regulator {
         let distance = Spherical.computeDistanceBetween(this.lastPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
         
-        let now = Date.now() / 1000;
+        let now = Date.now();
         let deltaTime = now - this.lasttime;
         let heading = Spherical.computeHeading(this.lastPosition, currentPosition);
         console.log("gps heading: " + heading);
         let error = this.calculateError(heading);
-        this.errSum += error * deltaTime;
+        this.errSum += +error * +deltaTime/1000; //seconds
         console.log("ErrSum: " + this.errSum);
         this.lasttime = now;
         this.lastPosition = currentPosition;
@@ -66,12 +65,12 @@ export class Regulator {
         let distance = Spherical.computeDistanceBetween(this.lastPosition, currentPosition);
         console.log("Travelled :" + distance + " meters");
         
-        let now = Date.now() / 1000; //Seconds
-        let deltaTime = now - this.lasttime; //Seconds
+        let now = Date.now(); 
+        let deltaTime = now - this.lasttime; 
         let heading = Spherical.computeHeading(this.lastPosition, currentPosition);
         console.log("gps heading: " + heading);
         let error = this.calculateError(heading);
-        this.errSum += error * deltaTime;
+        this.errSum += +error * +deltaTime/1000; //seconds
         console.log("ErrSum: " + this.errSum);
         this.lasttime = now;
         this.lastPosition = currentPosition;
@@ -80,6 +79,7 @@ export class Regulator {
     }
 
     private calculateError(currentHeading: number) {
+        
         if (currentHeading > 180) {
             currentHeading = currentHeading - 360;
 
@@ -93,10 +93,12 @@ export class Regulator {
 
     
     setKi(k_i: number) {
+        console.log("setting k_i: "+k_i);
         this.k_i = k_i;
     }
 
     setKp(k_p: number) {
+        console.log("setting k_p: "+k_p);
         this.k_p = k_p;
     }
 

@@ -1,17 +1,16 @@
+import { RudderSettings } from "./ruddersettings.model";
+import { RegulatorSettings } from "./regulatorsettings.model";
+
 export class Settings {
 
     constructor() {
-
+        this.regulator= new RegulatorSettings();
+        this.rudder = new RudderSettings();
+        this.setpointRadius = 10;
     }
 
-    compass: boolean;
-    kp : number;
-    ki : number;
-    tsCompass: number;
-    tsGps: number;
-    minAngel: number;
-    maxAngel: number;
-    turnTime: number;
+    regulator: RegulatorSettings;
+    rudder: RudderSettings;
     setpointRadius: number;
 
 }
