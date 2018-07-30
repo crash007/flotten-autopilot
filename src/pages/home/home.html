@@ -5,19 +5,20 @@
 </ion-header>
 
 <ion-content padding>
-  <ion-row></ion-row>
+
   <ion-row>
-    <button ion-button large (press)="leftDown($event)" (touchend)="leftUp($event)" icon-start>
+    
+    <button ion-button large [outline]="isLeftOutline" (press)="leftDown($event)" (touchend)="leftUp($event)" icon-start>
       <ion-icon name='arrow-back'></ion-icon>
       Babord
     </button>
 
 
-    <button ion-button large color="" (press)="rightDown($event)" (touchend)="rightUp($event)" icon-end>
+    <button ion-button large [outline]="isRightOutline" color="" (press)="rightDown($event)" (touchend)="rightUp($event)" icon-end>
       Styrbord
       <ion-icon name='arrow-forward'></ion-icon>
     </button>
-
+    
   </ion-row>
   <ion-row>
     <ion-col text-center>
